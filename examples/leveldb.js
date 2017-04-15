@@ -1,32 +1,28 @@
+#!/usr/bin/env node
 'use strict';
-
 /**
- * Sample of using leveldb to store fetched p2p data.
- * Need to install leveld first:
- *  1. npm install level
- *  2. node samples/leveldb.js
+ * Sample of using leveldb to store fetched torrent info.
  */
-
 var P2PSpider = require('../lib');
 var level = require('level');
 
 var db = level('./leveldb');
 
-var p2p = P2PSpider({
+var spider = P2PSpider({
     nodesMaxSize: 200,
     maxConnections: 400,
     timeout: 5000
 });
 
-p2p.ignore(function (infohash, rinfo, callback) {
+spider.ignore(function (infohash, rinfo, callback) {
     db.get(infohash, function (err, value) {
         callback(!!err);
     });
 });
 
-setInterval(() => p2p.dht.search(), 1000)
+setInterval(() => spider.dht.search(), 1000)
 
-p2p.on('metadata', function (metadata) {
+spider.on('metadata', function (metadata) {
     var data = {};
     data.magnet = metadata.magnet;
     data.name = metadata.info.name ? metadata.info.name.toString() : '';
@@ -44,5 +40,3 @@ process.on('SIGINT', function() {
         process.exit();
     });
 });
-
-p2p.listen(6881, '0.0.0.0');
