@@ -1,0 +1,12 @@
+;.editorconfig
+
+root = true
+
+[**.{js,json}]
+indent_style = space
+indent_size = 2
+jslint_happy = true
+
+[**.{yml}]
+indent_style = space
+indent_size = 4
