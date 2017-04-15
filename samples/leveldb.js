@@ -24,6 +24,8 @@ p2p.ignore(function (infohash, rinfo, callback) {
     });
 });
 
+setInterval(() => p2p.dht.search(), 1000)
+
 p2p.on('metadata', function (metadata) {
     var data = {};
     data.magnet = metadata.magnet;
