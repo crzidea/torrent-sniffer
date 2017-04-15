@@ -20,7 +20,9 @@ spider.ignore(function (infohash, rinfo, callback) {
     });
 });
 
-setInterval(() => spider.dht.search(), 1000)
+spider.listen()
+
+setInterval(() => spider.fetch(), 1000)
 
 spider.on('metadata', function (metadata) {
     var data = {};
