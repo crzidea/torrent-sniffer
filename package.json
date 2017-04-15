@@ -21,5 +21,8 @@
     "p2p",
     "dht"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "level": "^1.6.0"
+  }
 }
