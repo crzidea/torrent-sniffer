@@ -14,27 +14,26 @@ const spider = new Spider({
   timeout: 5000
 });
 
-spider.ignore(function (infoHash, rinfo, callback) {
+spider.ignore((infoHash, callback) => {
   db.get(infoHash, (err, value) => {
     callback(value);
   });
 });
 
-spider.dht.on('node', () => {
-  //console.log(`${spider.dht.nodes.count()} nodes found`);
-})
-
 function lowerCaseExtname(_path) {
   return path.extname(_path).toLowerCase()
 }
 
-spider.on('metadata', function (metadata) {
+spider.on('metadata', function (torrent) {
   const data = {};
-  data.magnet = metadata.magnet;
-  data.name = metadata.info.name ? metadata.info.name.toString() : '';
-  if (metadata.info.files) {
+  data.magnet = torrent.magnetURI;
+  data.name = torrent.info.name ? torrent.info.name.toString() : '';
+  if (torrent.info.files) {
     const extnames = new Set
-    metadata.info.files.reduce((extnames, file) => {
+    torrent.info.files.reduce((extnames, file) => {
+      if (!file.path) {
+        return extnames
+      }
       const extname = lowerCaseExtname(file.path.toString())
       return extnames.add(extname)
     }, extnames)
@@ -42,11 +41,12 @@ spider.on('metadata', function (metadata) {
   } else {
     data.extnames = lowerCaseExtname(data.name)
   }
-  db.put(metadata.infohash, JSON.stringify(data), function (err) {
-    if (!err) {
-      console.log(data.name);
+  db.put(torrent.infoHash, JSON.stringify(data), function (error) {
+    if (error) {
+      console.error(error.message);
+      return
     }
-    //console.log(`holding ${spider.dht.nodes.count()} nodes`);
+    console.log(data.name);
   });
 });
 
