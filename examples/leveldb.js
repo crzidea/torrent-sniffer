@@ -10,7 +10,7 @@ const db = level('./leveldb');
 
 const spider = new Spider({
   nodesMaxSize: 200,
-  maxConnections: 100,
+  maxConnections: 10,
   timeout: 5000
 });
 
@@ -46,7 +46,7 @@ spider.on('metadata', function (metadata) {
     if (!err) {
       console.log(data.name);
     }
-    console.log(`holding ${spider.dht.nodes.count()} nodes`);
+    //console.log(`holding ${spider.dht.nodes.count()} nodes`);
   });
 });
 
