@@ -1,14 +1,14 @@
 {
-  "name": "p2pspider",
-  "description": "DHT Spider + BitTorrent Client = P2P Spider",
+  "name": "torrent-sniffer",
+  "description": "Sniff torrents on the DHT network",
   "version": "0.0.8",
   "author": {
     "name": "Fuck-You-GFW"
   },
-  "repository": "https://github.com/Fuck-You-GFW/p2pspider",
+  "repository": "https://github.com/crzidea/torrent-sniffer.git",
   "main": "lib/index.js",
   "bugs": {
-    "url": "https://github.com/Fuck-You-GFW/p2pspider/issues"
+    "url": "https://github.com/crzidea/torrent-sniffer/issues"
   },
   "scripts": {},
   "dependencies": {
