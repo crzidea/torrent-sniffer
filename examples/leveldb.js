@@ -2,19 +2,19 @@
 /**
  * Sample of using leveldb to store sniffed torrent info.
  */
-const Spider = require('../lib');
+const Sniffer = require('../lib');
 const level = require('level');
 const path = require('path')
 
 const db = level('./leveldb');
 
-const spider = new Spider({
+const sniffer = new Sniffer({
   nodesMaxSize: 200,
   maxConnections: 10,
   timeout: 5000
 });
 
-spider.ignore((infoHash, callback) => {
+sniffer.ignore((infoHash, callback) => {
   db.get(infoHash, (err, value) => {
     callback(value);
   });
@@ -24,7 +24,7 @@ function lowerCaseExtname(_path) {
   return path.extname(_path).toLowerCase()
 }
 
-spider.on('metadata', function (torrent) {
+sniffer.on('metadata', (torrent, callback) => {
   const data = {};
   data.magnet = torrent.magnetURI;
   data.name = torrent.info.name ? torrent.info.name.toString() : '';
@@ -41,21 +41,20 @@ spider.on('metadata', function (torrent) {
   } else {
     data.extnames = lowerCaseExtname(data.name)
   }
-  db.put(torrent.infoHash, JSON.stringify(data), function (error) {
+  db.put(torrent.infoHash, JSON.stringify(data), (error) => {
     if (error) {
       console.error(error.message);
-      return
+      return callback(error)
     }
     console.log(data.name);
+    callback()
   });
 });
 
-spider.start(20000, () => {
-  const { address, port } = spider.dht.address()
+sniffer.start(20000, () => {
+  const { address, port } = sniffer.dht.address()
   console.log('UDP Server listening on %s:%s', address, port);
 })
-
-setInterval(() => spider.sniff(), 1000)
 
 process.on('SIGINT', function () {
   db.close(function (err) {
