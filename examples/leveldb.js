@@ -4,26 +4,26 @@
 /**
  * Sample of using leveldb to store fetched torrent info.
  */
-var P2PSpider = require('../lib');
+var Spider = require('../lib');
 var level = require('level');
 
 var db = level('./leveldb');
 
-var spider = P2PSpider({
+var spider = new Spider({
   nodesMaxSize: 200,
-  maxConnections: 400,
+  maxConnections: 100,
   timeout: 5000
 });
 
-spider.ignore(function (infohash, rinfo, callback) {
-  db.get(infohash, function (err, value) {
-    callback(!!err);
+spider.ignore(function (infoHash, rinfo, callback) {
+  db.get(infoHash, (err, value) => {
+    callback(value);
   });
 });
 
-spider.listen()
-
-setInterval(() => spider.fetch(), 1000)
+spider.dht.on('node', () => {
+  //console.log(`${spider.dht.nodes.count()} nodes found`);
+})
 
 spider.on('metadata', function (metadata) {
   var data = {};
@@ -36,6 +36,13 @@ spider.on('metadata', function (metadata) {
     }
   });
 });
+
+spider.start(20000, () => {
+  const { address, port } = spider.dht.address()
+  console.log('UDP Server listening on %s:%s', address, port);
+})
+
+setInterval(() => spider.sniff(), 1000)
 
 process.on('SIGINT', function () {
   db.close(function (err) {
