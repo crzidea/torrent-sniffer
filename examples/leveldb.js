@@ -55,7 +55,7 @@ sniffer.start(20000, () => {
   const { address, port } = sniffer.dht.address()
   console.log('UDP Server listening on %s:%s', address, port);
   setInterval(() => {
-    console.log(`${sniffed.bt.torrents.length} torrents pending`);
+    console.log(`${sniffer.bt.torrents.length} torrents pending`);
   }, 10000)
 })
 
