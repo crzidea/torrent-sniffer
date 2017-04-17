@@ -2,7 +2,7 @@
 /**
  * Sample of using leveldb to store sniffed torrent info.
  */
-const Sniffer = require('../lib');
+const Sniffer = require('../');
 const level = require('level');
 const path = require('path')
 
@@ -41,7 +41,7 @@ sniffer.on('metadata', (torrent, callback) => {
   } else {
     data.extnames = lowerCaseExtname(data.name)
   }
-  db.put(torrent.infoHash, JSON.stringify(data), (error) => {
+  db.put(torrent.infoHash, JSON.stringify(data), {sync: true}, (error) => {
     if (error) {
       console.error(error.message);
       return callback(error)
