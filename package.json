@@ -12,8 +12,6 @@
   },
   "scripts": {},
   "dependencies": {
-    "bencode": "^0.11.0",
-    "bitfield": "^1.1.2",
     "bittorrent-dht": "^7.5.3",
     "memory-chunk-store": "^1.2.0",
     "webtorrent": "^0.98.18"
