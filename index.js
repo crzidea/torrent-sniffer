@@ -4,12 +4,16 @@ const crypto = require('crypto');
 const WebTorrent = require('webtorrent')
 const ChunkStore = require('memory-chunk-store')
 
+const defaults = {}
+defaults.btConcurrency = 200
+defaults.dhtConcurrency = 30
+
 class Sniffer extends EventEmitter {
 
   constructor(options) {
     super()
 
-    this.options = options || {};
+    this.options = Object.assign({}, defaults, options)
 
     this.bt = new WebTorrent({maxConns: 1})
 
@@ -19,10 +23,10 @@ class Sniffer extends EventEmitter {
 
     const locks = new Set
 
-    const dht = new DHT({concurrency: 30});
+    const dht = new DHT({concurrency: this.options.dhtConcurrency});
     this.dht = dht
     dht.on('announce_peer', (infoHash, peer) => {
-      if (this.bt.torrents.length >= 200) {
+      if (this.bt.torrents.length >= this.options.btConcurrency) {
         //console.log('bt client is busy, drop peer');
         return
       }
@@ -49,10 +53,10 @@ class Sniffer extends EventEmitter {
 
     const rpc = dht._rpc
     rpc.on('ping', (olders, newer) => {
-      for (const older of olders) {
-        rpc.nodes.remove(older.id)
-      }
-      //rpc.clear()
+      //for (const older of olders) {
+        //rpc.nodes.remove(older.id)
+      //}
+      rpc.clear()
     })
     dht.on('node', (node) => this.makeNeighbor(node))
   }
@@ -88,14 +92,8 @@ class Sniffer extends EventEmitter {
     }, 1000)
   };
 
-  sniff() {
-    //this.dht._bootstrap(true)
-    //if (this.bt.isIdle()) {
-      //this.dht.joinDHTNetwork();
-      //this.dht.makeNeighbours();
-    //}
-  }
-
 }
+
+Sniffer.defaults = defaults
 
 module.exports = Sniffer;

@@ -6,12 +6,10 @@ const Sniffer = require('../');
 const level = require('level');
 const path = require('path')
 
-const db = level('./leveldb');
+const db = level('/tmp/torrent-sniffer/leveldb');
 
 const sniffer = new Sniffer({
-  nodesMaxSize: 200,
-  maxConnections: 10,
-  timeout: 5000
+  btConcurrency: 100
 });
 
 sniffer.ignore((infoHash, callback) => {
