@@ -54,6 +54,9 @@ sniffer.on('metadata', (torrent, callback) => {
 sniffer.start(20000, () => {
   const { address, port } = sniffer.dht.address()
   console.log('UDP Server listening on %s:%s', address, port);
+  setInterval(() => {
+    console.log(`${sniffed.bt.torrents.length} torrents pending`);
+  }, 10000)
 })
 
 process.on('SIGINT', function () {
