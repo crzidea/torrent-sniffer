@@ -5,6 +5,7 @@ const WebTorrent = require('webtorrent')
 const ChunkStore = require('memory-chunk-store')
 
 const defaults = {}
+defaults.timeout = 5000
 defaults.btConcurrency = 200
 defaults.dhtConcurrency = 30
 
@@ -42,12 +43,22 @@ class Sniffer extends EventEmitter {
         }
         //const torrent = this.bt.add(infoHash, {store})
         const torrent = this.bt.add(infoHash, { store: ChunkStore })
+
+        const timeout = setTimeout(() => {
+          if (!this.bt.get(torrent)) {
+            return
+          }
+          this.bt.remove(torrent)
+        }, this.options.timeout);
+
         torrent.addPeer(`${peer.host}:${peer.port}`)
         torrent.once('metadata', () => {
+          clearTimeout(timeout)
           this.bt.remove(torrent)
           torrent.done = true
-          this.emit('metadata', torrent, () => locks.delete(lock))
+          this.emit('metadata', torrent)
         })
+        torrent.once('close', () => locks.delete(lock))
       })
     })
 

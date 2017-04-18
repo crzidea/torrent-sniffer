@@ -9,7 +9,7 @@ const path = require('path')
 const db = level('/tmp/torrent-sniffer/leveldb');
 
 const sniffer = new Sniffer({
-  btConcurrency: 100
+  btConcurrency: 50
 });
 
 sniffer.ignore((infoHash, callback) => {
@@ -22,7 +22,7 @@ function lowerCaseExtname(_path) {
   return path.extname(_path).toLowerCase()
 }
 
-sniffer.on('metadata', (torrent, callback) => {
+sniffer.on('metadata', (torrent) => {
   const data = {};
   data.magnet = torrent.magnetURI;
   data.name = torrent.info.name ? torrent.info.name.toString() : '';
@@ -42,10 +42,11 @@ sniffer.on('metadata', (torrent, callback) => {
   db.put(torrent.infoHash, JSON.stringify(data), {sync: true}, (error) => {
     if (error) {
       console.error(error.message);
-      return callback(error)
+      return
     }
+    console.log('--------');
     console.log(data.name);
-    callback()
+    console.log(data.magnet);
   });
 });
 
