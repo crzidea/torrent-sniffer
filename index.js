@@ -16,7 +16,16 @@ class Sniffer extends EventEmitter {
 
     this.options = Object.assign({}, defaults, options)
 
-    this.bt = new WebTorrent({maxConns: 1})
+    this.bt = new WebTorrent({
+      maxConns: 1,
+      dht: false,
+      tracker: false
+      //dht: {
+        //maxTables: 1,
+        //maxValues: 1,
+        //maxPeers: 1
+      //}
+    })
 
     this.bt.on('error', (error) => {
       console.error(error.message);
@@ -24,7 +33,12 @@ class Sniffer extends EventEmitter {
 
     const locks = new Set
 
-    const dht = new DHT({concurrency: this.options.dhtConcurrency});
+    const dht = new DHT({
+      concurrency: this.options.dhtConcurrency,
+      maxTables: 1,
+      maxValues: 1,
+      maxPeers: 1
+    });
     this.dht = dht
     dht.on('announce_peer', (infoHash, peer) => {
       if (this.bt.torrents.length >= this.options.btConcurrency) {
@@ -58,16 +72,18 @@ class Sniffer extends EventEmitter {
           torrent.done = true
           this.emit('metadata', torrent)
         })
-        torrent.once('close', () => locks.delete(lock))
+        torrent.once('close', () => {
+          locks.delete(lock)
+        })
       })
     })
 
     const rpc = dht._rpc
     rpc.on('ping', (olders, newer) => {
-      //for (const older of olders) {
-        //rpc.nodes.remove(older.id)
-      //}
-      rpc.clear()
+      for (const older of olders) {
+        rpc.nodes.remove(older.id)
+      }
+      //rpc.clear()
     })
     dht.on('node', (node) => this.makeNeighbor(node))
   }
