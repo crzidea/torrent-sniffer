@@ -5,11 +5,15 @@
 const Sniffer = require('../');
 const level = require('level');
 const path = require('path')
+const v8 = require('v8');
+v8.setFlagsFromString('--optimize_for_size')
 
 const db = level('/tmp/torrent-sniffer/leveldb');
 
 const sniffer = new Sniffer({
-  btConcurrency: 50
+  timeout: 10000,
+  btConcurrency: 50,
+  dhtConcurrency: 200
 });
 
 sniffer.ignore((infoHash, callback) => {
@@ -39,7 +43,8 @@ sniffer.on('metadata', (torrent) => {
   } else {
     data.extnames = lowerCaseExtname(data.name)
   }
-  db.put(torrent.infoHash, JSON.stringify(data), {sync: true}, (error) => {
+  //db.put(torrent.infoHash, JSON.stringify(data), {sync: true}, (error) => {
+  db.put(torrent.infoHash, JSON.stringify(data), (error) => {
     if (error) {
       console.error(error.message);
       return
@@ -54,7 +59,10 @@ sniffer.start(20000, () => {
   const { address, port } = sniffer.dht.address()
   console.log('UDP Server listening on %s:%s', address, port);
   setInterval(() => {
-    console.log(`${sniffer.bt.torrents.length} torrents pending`);
+    console.log(`${sniffer.getAndResetTorrentCounter()} torrents pending`);
+    if (!sniffer.bt.torrents.length) {
+      console.log(`${sniffer.nodes.count()} nodes in contact`);
+    }
   }, 10000)
 })
 

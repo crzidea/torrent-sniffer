@@ -16,7 +16,7 @@ class Sniffer extends EventEmitter {
 
     this.options = Object.assign({}, defaults, options)
 
-    this.bt = new WebTorrent({
+    const bt = this.bt = new WebTorrent({
       maxConns: 1,
       dht: false,
       tracker: false
@@ -27,12 +27,6 @@ class Sniffer extends EventEmitter {
       //}
     })
 
-    this.bt.on('error', (error) => {
-      console.error(error.message);
-    })
-
-    const locks = new Set
-
     const dht = new DHT({
       concurrency: this.options.dhtConcurrency,
       maxTables: 1,
@@ -40,11 +34,28 @@ class Sniffer extends EventEmitter {
       maxPeers: 1
     });
     this.dht = dht
+    const rpc   = this.rpc    = dht._rpc
+    const nodes = this.nodes  = rpc.nodes
+
+
+    this.bt.on('error', (error) => {
+      console.error(error.message);
+    })
+
+    this._maxTorrents = 0
+
+    const locks = new Set
+
     dht.on('announce_peer', (infoHash, peer) => {
       if (this.bt.torrents.length >= this.options.btConcurrency) {
         //console.log('bt client is busy, drop peer');
         return
       }
+
+      if (this.bt.torrents.length > this._maxTorrents) {
+        this._maxTorrents = this.bt.torrents.length
+      }
+
       const lock = infoHash.toString('hex')
       if (locks.has(lock)) {
         return
@@ -78,12 +89,13 @@ class Sniffer extends EventEmitter {
       })
     })
 
-    const rpc = dht._rpc
     rpc.on('ping', (olders, newer) => {
-      for (const older of olders) {
-        rpc.nodes.remove(older.id)
-      }
-      //rpc.clear()
+      //const [older] = olders
+      //rpc.nodes.remove(older.id)
+      //for (const older of olders) {
+        //rpc.nodes.remove(older.id)
+      //}
+      rpc.clear()
     })
     dht.on('node', (node) => this.makeNeighbor(node))
   }
@@ -106,6 +118,12 @@ class Sniffer extends EventEmitter {
     rpc.query(node, query)
   }
 
+  getAndResetTorrentCounter() {
+    const {_maxTorrents} = this
+    this._maxTorrents = this.bt.torrents.length
+    return _maxTorrents
+  }
+
   ignore(callback) {
     this._ignore = callback;
   };
@@ -116,7 +134,7 @@ class Sniffer extends EventEmitter {
     setInterval(() => {
       const rpc = this.dht._rpc
       rpc.bootstrap.forEach((node) => this.makeNeighbor(node, rpc.id))
-    }, 1000)
+    }, 10000)
   };
 
 }
