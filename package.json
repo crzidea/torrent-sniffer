@@ -24,6 +24,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "cycle-statistics": "^1.0.0",
     "level": "^1.6.0"
   }
 }

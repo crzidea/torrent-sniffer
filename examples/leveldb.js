@@ -11,7 +11,7 @@ v8.setFlagsFromString('--optimize_for_size')
 const db = level('/tmp/torrent-sniffer/leveldb');
 
 const sniffer = new Sniffer({
-  timeout: 10000,
+  timeout: 20000,
   btConcurrency: 50,
   dhtConcurrency: 200
 });
