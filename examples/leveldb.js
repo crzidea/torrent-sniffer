@@ -21,7 +21,11 @@ const sniffer = new Sniffer({
 
 sniffer.ignore(async function(infoHash) {
   return await new Promise((resolve ,reject) => {
-    db.get(infoHash, (err, value) => {
+    db.get(infoHash.toString('hex'), (err, value) => {
+      if (value) {
+        const metadata = JSON.parse(value);
+        console.log(`ignore: ${metadata.name}`);
+      }
       resolve(value);
     })
   })
@@ -61,6 +65,7 @@ sniffer.on('metadata', (torrent) => {
       console.error(error.message);
       return
     }
+    console.log('--------');
     console.log(data.name);
     console.log(data.magnet);
   });
@@ -71,10 +76,7 @@ sniffer.start(20000, () => {
   console.log('UDP Server listening on %s:%s', address, port);
   setInterval(() => {
     console.log('--------');
-    console.log(`${max.restart()} torrents pending`);
-    if (!sniffer.bt.torrents.length) {
-      console.log(`${sniffer.nodes.count()} nodes in contact`);
-    }
+    console.log(`${max.restart()} torrents pending, ${sniffer.nodes.count()} nodes in contact`);
   }, 10000)
 })
 
