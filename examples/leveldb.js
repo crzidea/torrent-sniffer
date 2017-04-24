@@ -16,11 +16,13 @@ const sniffer = new Sniffer({
   dhtConcurrency: 200
 });
 
-sniffer.ignore((infoHash, callback) => {
-  db.get(infoHash, (err, value) => {
-    callback(value);
-  });
-});
+sniffer.ignore(async function(infoHash) {
+  return await new Promise((resolve ,reject) => {
+    db.get(infoHash, (err, value) => {
+      resolve(value);
+    })
+  })
+})
 
 function lowerCaseExtname(_path) {
   return path.extname(_path).toLowerCase()
@@ -43,8 +45,8 @@ sniffer.on('metadata', (torrent) => {
   } else {
     data.extnames = lowerCaseExtname(data.name)
   }
-  //db.put(torrent.infoHash, JSON.stringify(data), {sync: true}, (error) => {
-  db.put(torrent.infoHash, JSON.stringify(data), (error) => {
+  db.put(torrent.infoHash, JSON.stringify(data), {sync: true}, (error) => {
+  //db.put(torrent.infoHash, JSON.stringify(data), (error) => {
     if (error) {
       console.error(error.message);
       return
