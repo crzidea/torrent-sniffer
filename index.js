@@ -6,8 +6,7 @@ const ChunkStore = require('memory-chunk-store')
 
 const defaults = {}
 defaults.timeout = 5000
-defaults.btConcurrency = 200
-defaults.dhtConcurrency = 30
+defaults.maxPending = 200
 
 class Sniffer extends EventEmitter {
 
@@ -28,7 +27,6 @@ class Sniffer extends EventEmitter {
     })
 
     const dht = new DHT({
-      concurrency: this.options.dhtConcurrency,
       maxTables: 1,
       maxValues: 1,
       maxPeers: 1
@@ -42,20 +40,14 @@ class Sniffer extends EventEmitter {
       console.error(error.message);
     })
 
-    this._maxTorrents = 0
-
     const locks = new Set
 
     const that = this
 
     dht.on('announce_peer', async function(infoHash, peer) {
-      if (that.bt.torrents.length >= that.options.btConcurrency) {
-        //console.log('bt client is busy, drop peer');
+      if (that.bt.torrents.length >= that.options.maxPending) {
+        that.emit('busy', infoHash, peer)
         return
-      }
-
-      if (that.bt.torrents.length > that._maxTorrents) {
-        that._maxTorrents = that.bt.torrents.length
       }
 
       const lock = infoHash.toString('hex')
@@ -64,13 +56,11 @@ class Sniffer extends EventEmitter {
       }
       locks.add(lock)
 
-      const drop = await that._ignore(infoHash)
-      //console.log(that.bt.torrents.length);
-      if (drop) {
+      const ignore = await that._ignore(infoHash)
+      if (ignore) {
         return locks.delete(lock)
       }
 
-      //const torrent = that.bt.add(infoHash, {store})
       const torrent = that.bt.add(infoHash, { store: ChunkStore })
 
       const timeout = setTimeout(() => {
@@ -90,6 +80,8 @@ class Sniffer extends EventEmitter {
       torrent.once('close', () => {
         locks.delete(lock)
       })
+
+      that.emit('torrent', torrent)
     })
 
     rpc.on('ping', (olders, newer) => {
@@ -119,12 +111,6 @@ class Sniffer extends EventEmitter {
       }
     };
     rpc.query(node, query)
-  }
-
-  getAndResetTorrentCounter() {
-    const {_maxTorrents} = this
-    this._maxTorrents = this.bt.torrents.length
-    return _maxTorrents
   }
 
   ignore(callback) {
