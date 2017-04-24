@@ -1,7 +1,7 @@
 {
   "name": "torrent-sniffer",
   "description": "Sniff torrents on the DHT network",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "author": {
     "name": "Fuck-You-GFW"
   },
