@@ -6,6 +6,9 @@
     "name": "Fuck-You-GFW"
   },
   "repository": "https://github.com/crzidea/torrent-sniffer.git",
+  "bin": {
+    "torrent-sniffer": "./bin/torrent-sniffer"
+  },
   "main": "index.js",
   "bugs": {
     "url": "https://github.com/crzidea/torrent-sniffer/issues"
