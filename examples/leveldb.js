@@ -12,7 +12,7 @@ const max = new Max()
 const v8 = require('v8');
 v8.setFlagsFromString('--optimize_for_size')
 
-const db = level('/tmp/torrent-sniffer/leveldb');
+const db = level(`${process.env.HOME}/.torrent-sniffer/leveldb`);
 
 const sniffer = new Sniffer({
   timeout: 20000,
