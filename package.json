@@ -17,6 +17,7 @@
   "dependencies": {
     "bittorrent-dht": "^7.5.3",
     "memory-chunk-store": "^1.2.0",
+    "pouchdb": "^6.2.0",
     "webtorrent": "^0.98.18"
   },
   "keywords": [
