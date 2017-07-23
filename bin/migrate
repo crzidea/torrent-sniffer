@@ -20,15 +20,13 @@ const stream = oldDB.createReadStream()
     //_rev:     1,
     magnet:   value.magnet,
     name:     value.name,
-    extnames: value.extnames
-      .split(',')
-      .map(extname => extname.replace(/^\./, ''))
+    extnames: value.extnames.split(',')
   }
   count++
 
   stream.pause()
   try {
-    await newDB.put(document, {force: true})
+    await newDB.put(document)
   } catch (e) {
     if (409 !== e.status) {
       throw e
