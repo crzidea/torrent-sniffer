@@ -13,6 +13,17 @@ const db = pouchdb(
   `${process.env.HOME}/.torrent-sniffer/database`,
   {revs_limit: 1}
 );
+db.replicate.to(
+  'http://torrdb.less.center:5984/torrent',
+  {
+    live: true,
+    retry: true
+  }
+)
+.on('error', function (error) {
+  console.error(error)
+});
+
 
 const sniffer = new Sniffer({
   timeout: 20000,
