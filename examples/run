@@ -1,7 +1,0 @@
-#!/usr/bin/env sh
-service=torrent-sniffer
-mkdir -p /tmp/$service
-sudo cgcreate -t $USER -a $USER -g memory:$service
-cgset -r memory.limit_in_bytes=500000000  $service
-cgset -r memory.swappiness=0              $service
-exec cgexec -g memory:$service node ./leveldb.js #1>stdout.log 2>stderr.log
