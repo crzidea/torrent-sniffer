@@ -13,12 +13,15 @@
   "bugs": {
     "url": "https://github.com/crzidea/torrent-sniffer/issues"
   },
-  "scripts": {},
+  "scripts": {
+    "start": "./bin/torrent-sniffer"
+  },
   "dependencies": {
     "bittorrent-dht": "^7.5.3",
     "memory-chunk-store": "^1.2.0",
     "pouchdb": "^6.2.0",
-    "webtorrent": "^0.98.18"
+    "webtorrent": "^0.98.18",
+    "cycle-statistics": "^1.0.1"
   },
   "keywords": [
     "torrent",
@@ -26,9 +29,5 @@
     "p2p",
     "dht"
   ],
-  "license": "MIT",
-  "devDependencies": {
-    "cycle-statistics": "^1.0.0",
-    "level": "^1.6.0"
-  }
+  "license": "MIT"
 }

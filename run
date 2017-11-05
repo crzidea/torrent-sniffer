@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-service=torrent-sniffer
-mkdir -p ~/.$service/database
-exec ./bin/torrent-sniffer #1>stdout.log 2>stderr.log
