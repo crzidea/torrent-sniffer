@@ -12,7 +12,7 @@ RUN apt-get update && \
 
 COPY . /application
 
-VOLUME ~/.torrent-sniffer
+VOLUME /root/.torrent-sniffer
 EXPOSE 20000/udp
 
 CMD npm start
