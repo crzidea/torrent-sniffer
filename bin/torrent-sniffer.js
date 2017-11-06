@@ -13,8 +13,10 @@ const db = pouchdb(
   `${process.env.HOME}/.torrent-sniffer/database`,
   {revs_limit: 1}
 );
+
+const REPLICATE_TO = process.env.REPLICATE_TO || 'http://torrdb:5984/torrent'
 db.replicate.to(
-  'http://torrdb.less.center:5984/torrent',
+  REPLICATE_TO,
   {
     live: true,
     retry: true
