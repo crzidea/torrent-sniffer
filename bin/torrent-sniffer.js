@@ -2,6 +2,7 @@
 const Sniffer = require('../');
 const pouchdb = require('pouchdb')
 const path = require('path')
+const thepiratebay = require('../lib/thepiratebay-top.js')
 
 const {Max} = require('cycle-statistics')
 const max = new Max()
@@ -84,13 +85,26 @@ sniffer.on('metadata', async (torrent) => {
   console.log(data.magnet);
 });
 
-sniffer.start(20000, () => {
+const PORT = process.env.PORT || 20000
+sniffer.start(PORT, () => {
   const { address, port } = sniffer.dht.address()
   console.log('UDP Server listening on %s:%s', address, port);
   setInterval(() => {
     console.log('--------');
     console.log(`${max.restart()} torrents pending, ${sniffer.nodes.count()} nodes in contact`);
+    max.push(sniffer.bt.torrents.length)
   }, 10000)
+
+  async function $fetch() {
+    const list = await thepiratebay()
+    for (const item of list) {
+      sniffer.add(item.infoHash, null, item.magnet)
+    }
+  }
+
+  setInterval(() => {
+    $fetch()
+  }, 60e3 * 5)
 })
 
 process.on('SIGINT', async () => {

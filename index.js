@@ -5,7 +5,7 @@ const WebTorrent = require('webtorrent')
 const ChunkStore = require('memory-chunk-store')
 
 const defaults = {}
-defaults.timeout = 5000
+defaults.timeout = 60e3 * 10
 defaults.maxPending = 200
 
 class Sniffer extends EventEmitter {
@@ -16,8 +16,8 @@ class Sniffer extends EventEmitter {
     this.options = Object.assign({}, defaults, options)
 
     const bt = this.bt = new WebTorrent({
-      maxConns: 1,
-      dht: false,
+      //maxConns: 1,
+      //dht: false,
       tracker: false
       //dht: {
         //maxTables: 1,
@@ -61,7 +61,8 @@ class Sniffer extends EventEmitter {
     })
     dht.on('node', (node) => this.makeNeighbor(node))
   }
-  async add(infoHash, peer) {
+
+  async add(infoHash, peer, magnet) {
     const locks = this.locks
     const lock = infoHash.toString('hex')
     if (locks.has(lock)) {
@@ -74,7 +75,7 @@ class Sniffer extends EventEmitter {
       return locks.delete(lock)
     }
 
-    const torrent = this.bt.add(infoHash, { store: ChunkStore })
+    const torrent = this.bt.add(magnet || infoHash, { store: ChunkStore })
 
     const timeout = setTimeout(() => {
       if (!this.bt.get(torrent)) {
@@ -83,7 +84,10 @@ class Sniffer extends EventEmitter {
       this.bt.remove(torrent)
     }, this.options.timeout);
 
-    torrent.addPeer(`${peer.host}:${peer.port}`)
+    if (peer) {
+      torrent.addPeer(`${peer.host}:${peer.port}`)
+    }
+
     torrent.once('metadata', () => {
       clearTimeout(timeout)
       this.bt.remove(torrent)
