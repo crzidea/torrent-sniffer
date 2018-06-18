@@ -1,4 +1,4 @@
-FROM node:slim
+FROM node:8-slim
 
 COPY package.json package-lock.json /application/
 WORKDIR /application
