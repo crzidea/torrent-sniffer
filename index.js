@@ -40,48 +40,15 @@ class Sniffer extends EventEmitter {
       console.error(error.message);
     })
 
-    const locks = new Set
+    this.locks = new Set
 
-    const that = this
-
-    dht.on('announce_peer', async function(infoHash, peer) {
-      if (that.bt.torrents.length >= that.options.maxPending) {
-        that.emit('busy', infoHash, peer)
+    dht.on('announce_peer', async (infoHash, peer) => {
+      if (this.bt.torrents.length >= this.options.maxPending) {
+        this.emit('busy', infoHash, peer)
         return
       }
 
-      const lock = infoHash.toString('hex')
-      if (locks.has(lock)) {
-        return
-      }
-      locks.add(lock)
-
-      const ignore = await that._ignore(infoHash)
-      if (ignore) {
-        return locks.delete(lock)
-      }
-
-      const torrent = that.bt.add(infoHash, { store: ChunkStore })
-
-      const timeout = setTimeout(() => {
-        if (!that.bt.get(torrent)) {
-          return
-        }
-        that.bt.remove(torrent)
-      }, that.options.timeout);
-
-      torrent.addPeer(`${peer.host}:${peer.port}`)
-      torrent.once('metadata', () => {
-        clearTimeout(timeout)
-        that.bt.remove(torrent)
-        torrent.done = true
-        that.emit('metadata', torrent)
-      })
-      torrent.once('close', () => {
-        locks.delete(lock)
-      })
-
-      that.emit('torrent', torrent)
+      this.add(infoHash, peer)
     })
 
     rpc.on('ping', (olders, newer) => {
@@ -93,6 +60,41 @@ class Sniffer extends EventEmitter {
       rpc.clear()
     })
     dht.on('node', (node) => this.makeNeighbor(node))
+  }
+  async add(infoHash, peer) {
+    const locks = this.locks
+    const lock = infoHash.toString('hex')
+    if (locks.has(lock)) {
+      return
+    }
+    locks.add(lock)
+
+    const ignore = await this._ignore(infoHash)
+    if (ignore) {
+      return locks.delete(lock)
+    }
+
+    const torrent = this.bt.add(infoHash, { store: ChunkStore })
+
+    const timeout = setTimeout(() => {
+      if (!this.bt.get(torrent)) {
+        return
+      }
+      this.bt.remove(torrent)
+    }, this.options.timeout);
+
+    torrent.addPeer(`${peer.host}:${peer.port}`)
+    torrent.once('metadata', () => {
+      clearTimeout(timeout)
+      this.bt.remove(torrent)
+      torrent.done = true
+      this.emit('metadata', torrent)
+    })
+    torrent.once('close', () => {
+      locks.delete(lock)
+    })
+
+    this.emit('torrent', torrent)
   }
 
   makeNeighbor(node, id) {

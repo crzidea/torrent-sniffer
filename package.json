@@ -18,10 +18,11 @@
   },
   "dependencies": {
     "bittorrent-dht": "^7.5.3",
+    "cycle-statistics": "^1.0.1",
     "memory-chunk-store": "^1.2.0",
+    "node-fetch": "^2.1.2",
     "pouchdb": "^6.2.0",
-    "webtorrent": "^0.98.18",
-    "cycle-statistics": "^1.0.1"
+    "webtorrent": "^0.98.18"
   },
   "keywords": [
     "torrent",
