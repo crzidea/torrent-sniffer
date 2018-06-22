@@ -19,17 +19,17 @@ class Sniffer extends EventEmitter {
       //maxConns: 1,
       //dht: false,
       tracker: false
-      //dht: {
-        //maxTables: 1,
-        //maxValues: 1,
-        //maxPeers: 1
-      //}
+      dht: {
+        maxTables: 10,
+        maxValues: 10,
+        maxPeers: 100
+      }
     })
 
     const dht = new DHT({
-      maxTables: 1,
-      maxValues: 1,
-      maxPeers: 1
+      maxTables: 10,
+      maxValues: 10,
+      maxPeers: 100
     });
     this.dht = dht
     const rpc   = this.rpc    = dht._rpc
