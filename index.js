@@ -18,7 +18,7 @@ class Sniffer extends EventEmitter {
     const bt = this.bt = new WebTorrent({
       //maxConns: 1,
       //dht: false,
-      tracker: false
+      tracker: false,
       dht: {
         maxTables: 10,
         maxValues: 10,
