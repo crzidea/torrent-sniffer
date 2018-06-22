@@ -2,6 +2,7 @@ FROM node:8-slim
 
 COPY package.json package-lock.json /application/
 WORKDIR /application
+ENV NO_COLOR=1
 RUN apt-get update && \
     apt-get install -y python make g++ && \
     npm install --production && \
